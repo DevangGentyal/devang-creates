@@ -3,10 +3,13 @@ import { VideoType } from '../types';
 export const videos: VideoType[] = [
 	{
 		id: '1',
-		title: 'Dexter VS Zodiac Killer',
+		title: 'Doakes VS Dexter',
 		category: 'documentary',
 		type: 'long',
-		youtubeId: 'Lq-cBox9CK4'
+		youtubeId: 'N1OGrqkQvr4&t'
+		
+
+		
 	},
 	{
 		id: '2',
@@ -31,10 +34,10 @@ export const videos: VideoType[] = [
 	},
 	{
 		id: '5',
-		title: 'Aurther Mitchel',
+		title: 'Dexter VS Zodiac Killer',
 		category: 'documentary',
 		type: 'long',
-		youtubeId: 'Kt59uyfDZMg&rco'
+		youtubeId: 'Lq-cBox9CK4'
 	},
 	{
 		id: '6',
