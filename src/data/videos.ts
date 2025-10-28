@@ -34,7 +34,7 @@ export const videos: VideoType[] = [
 		title: 'Aurther Mitchel',
 		category: 'documentary',
 		type: 'long',
-		youtubeId: 'Kt59uyfDZMg&rco=1'
+		youtubeId: 'Kt59uyfDZMg&rco'
 	},
 	{
 		id: '6',
