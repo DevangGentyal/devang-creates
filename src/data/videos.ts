@@ -6,7 +6,7 @@ export const videos: VideoType[] = [
 		title: 'Doakes VS Dexter',
 		category: 'documentary',
 		type: 'long',
-		youtubeId: 'N1OGrqkQvr4&t'
+		youtubeId: 'N1OGrqkQvr4'
 		
 
 		
