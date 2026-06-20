@@ -39,7 +39,7 @@ export default function ProjectsDashboardPage() {
     }
   }
 
-  const handleDelete = async (id: string) {
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return
 
     setDeleting(id)
