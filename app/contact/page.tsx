@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { sendEmailAction } from '@/app/actions/send-email'
 import { Header } from '@/components/header'
 import { Button } from '@/components/ui/button'
 import { Mail, Instagram, Youtube, Twitter, Linkedin, MessageCircle } from 'lucide-react'
@@ -17,6 +18,7 @@ export default function ContactPage() {
   })
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -29,22 +31,23 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMsg('')
 
     try {
-      // Send email using a simple fetch to a contact service
-      // For now, we'll just show a success message
-      console.log('[v0] Contact form submitted:', formData)
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      setSubmitted(true)
-      setFormData({ name: '', email: '', subject: '', message: '' })
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitted(false), 5000)
+      const res = await sendEmailAction(formData)
+
+      if (res?.error) {
+        setErrorMsg(res.error)
+      } else {
+        setSubmitted(true)
+        setFormData({ name: '', email: '', subject: '', message: '' })
+
+        // Reset success message after 5 seconds
+        setTimeout(() => setSubmitted(false), 5000)
+      }
     } catch (error) {
       console.error('[v0] Error submitting form:', error)
+      setErrorMsg('An unexpected error occurred.')
     } finally {
       setLoading(false)
     }
@@ -54,7 +57,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="space-y-12">
           {/* Header */}
           <div className="space-y-4 text-center">
@@ -139,6 +142,12 @@ export default function ContactPage() {
                 <Button type="submit" size="lg" disabled={loading} className="w-full">
                   {loading ? 'Sending...' : 'Send Message'}
                 </Button>
+
+                {errorMsg && (
+                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                    {errorMsg}
+                  </div>
+                )}
               </form>
             </div>
 
@@ -146,8 +155,8 @@ export default function ContactPage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-foreground">Get In Touch</h3>
-                
-                <div className="space-y-6">
+
+                <div className="space-y-8">
                   <a
                     href="mailto:darshangentyal02@gmail.com"
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-card transition-colors"
@@ -186,7 +195,7 @@ export default function ContactPage() {
                   </a>
 
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/DevangGentyal"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-card transition-colors"
@@ -194,12 +203,12 @@ export default function ContactPage() {
                     <Twitter className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <p className="text-sm text-foreground/60">Twitter/X</p>
-                      <p className="font-medium text-foreground">@devang_gentyal</p>
+                      <p className="font-medium text-foreground">@DevangGentyal</p>
                     </div>
                   </a>
 
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/devang-gentyal-4b6990267/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-card transition-colors"
@@ -212,7 +221,7 @@ export default function ContactPage() {
                   </a>
 
                   <a
-                    href="https://discord.com"
+                    href="https://discord.com/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-card transition-colors"
@@ -220,7 +229,7 @@ export default function ContactPage() {
                     <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <p className="text-sm text-foreground/60">Discord</p>
-                      <p className="font-medium text-foreground">devangcreates</p>
+                      <p className="font-medium text-foreground">drax_gamer</p>
                     </div>
                   </a>
                 </div>

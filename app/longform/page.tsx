@@ -5,128 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/header'
 import { Card } from '@/components/ui/card'
 
-// --- Helpers -----------------------------------------------------------
-
-// Check if a URL points directly to a playable video file
-function isDirectVideoUrl(url: string | undefined | null) {
-  if (!url) return false
-  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)
-}
-
-// Try to pull a YouTube thumbnail from a YouTube URL
-function getYouTubeThumbnail(url: string | undefined | null): string | null {
-  if (!url) return null
-  const patterns = [
-    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
-    /youtube\.com\/(?:watch\?v=|embed\/|v\/)([a-zA-Z0-9_-]{11})/,
-  ]
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`
-  }
-  return null
-}
-
-// --- Thumbnail component ------------------------------------------------
-
-function VideoThumbnail({ video }: { video: any }) {
-  const [thumbnail, setThumbnail] = useState<string | null>(video.thumbnail || null)
-  const [failed, setFailed] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  const needsGeneratedThumb =
-    !video.thumbnail && !failed && isDirectVideoUrl(video.url)
-
-  useEffect(() => {
-    if (video.thumbnail) {
-      setThumbnail(video.thumbnail)
-      return
-    }
-
-    const ytThumb = getYouTubeThumbnail(video.url)
-    if (ytThumb) {
-      setThumbnail(ytThumb)
-      return
-    }
-
-    if (!isDirectVideoUrl(video.url)) {
-      setThumbnail(null)
-      return
-    }
-
-    const videoEl = videoRef.current
-    if (!videoEl) return
-
-    const handleLoadedData = () => {
-      try {
-        const duration = videoEl.duration
-        const seekTime = duration && isFinite(duration) ? Math.min(1, duration / 2) : 0.1
-        videoEl.currentTime = seekTime
-      } catch (e) {
-        console.error('[v0] Error seeking video for thumbnail:', e)
-        setFailed(true)
-      }
-    }
-
-    const handleSeeked = () => {
-      try {
-        const canvas = document.createElement('canvas')
-        canvas.width = videoEl.videoWidth
-        canvas.height = videoEl.videoHeight
-        const ctx = canvas.getContext('2d')
-        if (ctx && canvas.width > 0 && canvas.height > 0) {
-          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
-          setThumbnail(canvas.toDataURL('image/jpeg', 0.8))
-        }
-      } catch (e) {
-        console.error('[v0] Error generating thumbnail:', e)
-        setFailed(true)
-      }
-    }
-
-    const handleError = () => {
-      setFailed(true)
-    }
-
-    videoEl.addEventListener('loadeddata', handleLoadedData)
-    videoEl.addEventListener('seeked', handleSeeked)
-    videoEl.addEventListener('error', handleError)
-
-    return () => {
-      videoEl.removeEventListener('loadeddata', handleLoadedData)
-      videoEl.removeEventListener('seeked', handleSeeked)
-      videoEl.removeEventListener('error', handleError)
-    }
-  }, [video])
-
-  return (
-    <>
-      {thumbnail ? (
-        <img
-          src={thumbnail || "/placeholder.svg"}
-          alt={video.title}
-          loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30" />
-      )}
-
-      {/* Hidden video used only to capture a frame for the thumbnail */}
-      {needsGeneratedThumb && (
-        <video
-          ref={videoRef}
-          src={video.url}
-          crossOrigin="anonymous"
-          muted
-          playsInline
-          preload="metadata"
-          className="hidden"
-        />
-      )}
-    </>
-  )
-}
+import { LongFormCard, ModalPlayer } from '@/components/video-components'
 
 // --- Main page ------------------------------------------------------------
 
@@ -221,30 +100,7 @@ export default function LongFormPage() {
           {/* Videos Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredVideos.map((video) => (
-              <Card
-                key={video.id}
-                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-                onClick={() => setSelectedVideo(video)}
-              >
-                <div
-                  className="relative overflow-hidden"
-                  style={{ aspectRatio: '16 / 9' }}
-                >
-                  {/* Thumbnail / preview */}
-                  <VideoThumbnail video={video} />
-
-                  {/* Play button overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all">
-                      <div className="w-0 h-0 border-y-[9px] border-y-transparent border-l-[14px] border-l-black/80 ml-1" />
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-foreground">{video.title}</h3>
-                  {video.niche && <p className="text-sm text-foreground/60 mt-1">{video.niche}</p>}
-                </div>
-              </Card>
+              <LongFormCard key={video.id} video={video} onClick={() => setSelectedVideo(video)} />
             ))}
           </div>
 
@@ -279,23 +135,7 @@ export default function LongFormPage() {
 
             {/* Video Player */}
             <div className="relative w-full aspect-[16/9] bg-black">
-              {isDirectVideoUrl(selectedVideo.url) ? (
-                <video
-                  src={selectedVideo.url}
-                  className="w-full h-full object-contain"
-                  controls
-                  autoPlay
-                  playsInline
-                />
-              ) : (
-                <iframe
-                  src={selectedVideo.url}
-                  className="w-full h-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                  title={selectedVideo.title}
-                />
-              )}
+              <ModalPlayer video={selectedVideo} />
             </div>
           </div>
         </div>
